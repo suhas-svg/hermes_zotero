@@ -1,0 +1,37 @@
+name: zotero
+version: 1.0.0
+manifest_version: 2
+api_version: 1
+description: "Research with your own Zotero library: search it, read your PDF highlights and full text, cite with Zotero's citation engine, add papers by DOI/arXiv, and check a draft's citations against the library."
+author: suhas-svg
+license: MIT
+homepage: https://github.com/suhas-svg/hermes_zotero
+tags: [zotero, research, citations, bibliography, papers, academic]
+requires_hermes: ">=0.22.5"
+provides_tools:
+  - zotero_status
+  - zotero_search
+  - zotero_item
+  - zotero_fulltext
+  - zotero_cite
+  - zotero_add
+  - zotero_verify
+provides_hooks: []
+python_dependencies: []
+config_schema:
+  zotero_url:
+    type: str
+    default: "http://127.0.0.1:23119"
+    description: "Zotero desktop's local HTTP server. Keep the loopback default unless Zotero runs elsewhere."
+  citation_style:
+    type: str
+    default: "apa"
+    description: "Default CSL style for zotero_cite (any style installed in Zotero, e.g. apa, ieee, chicago-author-date)."
+  data_dir:
+    type: str
+    default: ""
+    description: "Zotero data directory, used to read the full-text cache. Empty means ~/Zotero."
+  request_timeout:
+    type: float
+    default: 15.0
+    description: "Seconds to wait for Zotero and the metadata services."
