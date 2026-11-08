@@ -12,6 +12,7 @@ import importlib.util
 import json
 import sys
 import threading
+import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -495,6 +496,17 @@ def test_extract_citations_finds_parenthetical_narrative_and_doi():
     pairs = [(c.get("author"), c.get("year")) for c in found if c["kind"] == "author_year"]
     assert pairs == [("Vaswani", "2017"), ("LeCun", "2015"), ("Smith", "2020")]
     assert [c["doi"] for c in found if c["kind"] == "doi"] == ["10.1038/nature14539"]
+
+
+@pytest.mark.parametrize("size", [290, 2048])
+def test_adversarial_parenthetical_returns_quickly(size):
+    # "and" between capitalised letters used to let separators overlap names: exponential backtracking.
+    body = ("A" + "andA" * size)[: size - len(" x 2020")]
+    text = f"Claim ({body} x 2020)."
+    started = time.perf_counter()
+    found = library.extract_citations(text)
+    assert time.perf_counter() - started < 0.1
+    assert [c for c in found if c["kind"] == "author_year"] == []
 
 
 def test_verify_flags_citations_not_in_the_library(fake):

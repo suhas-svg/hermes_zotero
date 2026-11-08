@@ -1,5 +1,5 @@
 name: zotero
-version: 1.0.0
+version: 1.0.1
 manifest_version: 2
 api_version: 1
 description: "Research with your own Zotero library: search it, read your PDF highlights and full text, cite with Zotero's citation engine, add papers by DOI/arXiv, and check a draft's citations against the library."

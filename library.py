@@ -144,9 +144,12 @@ def passages(text: str, terms: list[str], *, radius: int = 320, per_term: int = 
 _DOI_RE = re.compile(r"\b10\.\d{4,9}/[^\s\"<>()\[\]]+", re.IGNORECASE)
 _PAREN_RE = re.compile(r"\(([^()]*?\b(?:1[5-9]\d\d|20\d\d)[a-z]?[^()]*)\)")
 _NAME = r"[A-Z][A-Za-z'À-ſ\-]+(?:\s(?:van|von|de|der|da|di|le|la)\s[A-Z][A-Za-z'\-]+)?"
+# Separators must not overlap the letters of a name ("AandAand..." backtracks exponentially otherwise).
 _PART_RE = re.compile(
-    rf"(?P<name>(?:{_NAME}\s)?{_NAME})(?:\s+et\s+al\.?|\s*(?:,|and|&)\s*{_NAME})*,?\s*(?P<year>(?:1[5-9]\d\d|20\d\d))[a-z]?"
+    rf"(?P<name>(?:{_NAME}\s)?{_NAME})(?:\s+et\s+al\.?|(?:\s*,\s*|\s+(?:and|&)\s+){_NAME})*,?\s*"
+    rf"(?P<year>(?:1[5-9]\d\d|20\d\d))[a-z]?"
 )
+_MAX_PART_CHARS = 300  # one citation in a parenthetical; longer runs are prose, not references
 _NARRATIVE_RE = re.compile(
     rf"\b(?P<name>{_NAME})(?:\s+et\s+al\.?|\s+(?:and|&)\s+{_NAME})?\s+\((?P<year>(?:1[5-9]\d\d|20\d\d))[a-z]?"
 )
@@ -170,6 +173,8 @@ def extract_citations(text: str) -> list[dict[str, str]]:
         add("doi", doi, doi)
     for group in _PAREN_RE.finditer(text):
         for part in group.group(1).split(";"):
+            if len(part) > _MAX_PART_CHARS:
+                continue
             hit = _PART_RE.search(part)
             if hit:
                 add("author_year", hit.group("name").split()[-1], part, hit.group("year"))
